@@ -2018,8 +2018,16 @@
 
         // Enhanced touch event handlers with better tablet support
         function startDrawingTouch(e) {
+            // Prevent all default behaviors including scrolling
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Only handle single touch (ignore multi-touch)
+            if (e.touches.length !== 1) return;
+            
+            // Add drawing-active class to prevent body scrolling
+            document.body.classList.add('drawing-active');
             
             const pos = getTouchPos(e);
             
@@ -2029,11 +2037,13 @@
                 brushColor.value = currentColor;
                 updateColorDisplay();
                 updateRGBFromHex();
+                document.body.classList.remove('drawing-active');
                 return;
             }
             
             if (currentTool === 'text') {
                 addText(pos.x, pos.y);
+                document.body.classList.remove('drawing-active');
                 return;
             }
             
@@ -2050,17 +2060,35 @@
             ctx.beginPath();
             ctx.moveTo(pos.x, pos.y);
             
+            // Force setup the correct tool context for tablets
             if (currentTool === 'brush') {
                 setupBrushStyle();
             } else if (currentTool === 'eraser') {
                 setupEraserStyle();
+                // Force a small erase at start position for tablets
+                ctx.save();
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, brushSize.value / 2, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.restore();
+                // Reset for stroke drawing
+                setupEraserStyle();
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
             }
         }
 
         function drawTouch(e) {
             if (!drawing && !isDrawingShape) return;
+            
+            // Prevent all default behaviors
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Only handle single touch
+            if (e.touches.length !== 1) return;
             
             const pos = getTouchPos(e);
             
@@ -2072,13 +2100,39 @@
             if (currentTool === 'brush') {
                 drawWithBrush(pos.x, pos.y);
             } else if (currentTool === 'eraser') {
-                eraseAtPosition(pos.x, pos.y);
+                // Enhanced eraser for tablets - use both stroke and fill methods
+                ctx.save();
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.lineWidth = brushSize.value;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                // Stroke method
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                
+                // Additional fill method for better tablet support
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, brushSize.value / 2, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                ctx.restore();
+                
+                // Reset for next stroke
+                setupEraserStyle();
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
             }
         }
 
         function stopDrawingTouch(e) {
+            // Prevent all default behaviors
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Remove drawing-active class to allow normal scrolling
+            document.body.classList.remove('drawing-active');
             
             drawing = false;
             if (isDrawingShape) {
