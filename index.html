@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw & Time - Enhanced</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        accent: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        warning: '#FFE66D',
+                        success: '#95E1D3'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .drawing-canvas {
+            touch-action: none;
+            cursor: crosshair;
+        }
+        .btn-primary {
+            @apply bg-gradient-to-r from-primary to-purple-600 hover:from-purple-600 hover:to-primary text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg;
+        }
+        .btn-secondary {
+            @apply bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 hover:from-gray-300 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-700 text-gray-800 dark:text-gray-200 font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md;
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    <!-- Setup Screen -->
+    <div id="setupScreen" class="container mx-auto px-4 py-8 max-w-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-primary mb-4">Draw & Time - Enhanced</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400">Get a random prompt and draw with professional tools!</p>
+            <div class="flex justify-center gap-4 mt-6">
+                <button id="tutorialBtn" class="bg-gradient-to-r from-secondary to-teal-500 hover:from-teal-500 hover:to-secondary text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">
+                    📚 Drawing Tutorial
+                </button>
+                <button id="aboutBtn" class="bg-gradient-to-r from-warning to-yellow-500 hover:from-yellow-500 hover:to-warning text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">
+                    ℹ️ About
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-accent/10 to-secondary/10 dark:from-accent/20 dark:to-secondary/20 border-2 border-accent/30 rounded-xl p-6 mb-6 shadow-lg">
+            <h2 class="text-xl font-semibold mb-4 text-accent">🎨 Drawing Prompt</h2>
+            <div id="promptDisplay" class="text-2xl font-medium text-primary mb-4 min-h-[3rem] flex items-center justify-center border-3 border-dashed border-secondary rounded-lg p-4 bg-white/50 dark:bg-gray-700/50">
+                Click "Get Prompt" to start!
+            </div>
+            <button id="getPromptBtn" class="btn-primary w-full">🎲 Get Random Prompt</button>
+        </div>
+
+        <div class="bg-gradient-to-br from-warning/10 to-success/10 dark:from-warning/20 dark:to-success/20 border-2 border-warning/30 rounded-xl p-6 mb-6 shadow-lg">
+            <h2 class="text-xl font-semibold mb-4 text-warning">⏰ Timer Settings</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <button class="timer-btn bg-gradient-to-r from-secondary to-cyan-400 hover:from-cyan-400 hover:to-secondary text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md" data-time="30">30s</button>
+                <button class="timer-btn bg-gradient-to-r from-success to-green-400 hover:from-green-400 hover:to-success text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md" data-time="60">1m</button>
+                <button class="timer-btn bg-gradient-to-r from-warning to-yellow-400 hover:from-yellow-400 hover:to-warning text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md" data-time="120">2m</button>
+                <button class="timer-btn bg-gradient-to-r from-accent to-pink-400 hover:from-pink-400 hover:to-accent text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md" data-time="300">5m</button>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Custom time (seconds):</label>
+                <input type="number" id="customTime" min="10" max="3600" placeholder="Enter seconds..." 
+                       class="w-full px-4 py-3 text-base border-2 border-secondary/30 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-300">
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20 border-2 border-primary/30 rounded-xl p-6 mb-6 shadow-lg">
+            <h2 class="text-xl font-semibold mb-4 text-primary">📏 Canvas Size</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                <button class="canvas-btn bg-gradient-to-r from-primary to-purple-500 hover:from-purple-500 hover:to-primary text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md" data-width="800" data-height="600">
+                    Small<br><span class="text-xs">800×600</span>
+                </button>
+                <button class="canvas-btn bg-gradient-to-r from-accent to-pink-500 hover:from-pink-500 hover:to-accent text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md" data-width="1200" data-height="900">
+                    Medium<br><span class="text-xs">1200×900</span>
+                </button>
+                <button class="canvas-btn bg-gradient-to-r from-secondary to-teal-500 hover:from-teal-500 hover:to-secondary text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md" data-width="1600" data-height="1200">
+                    Large<br><span class="text-xs">1600×1200</span>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Width (px):</label>
+                    <input type="number" id="customWidth" min="400" max="3000" placeholder="Enter width..." 
+                           class="w-full px-4 py-3 text-base border-2 border-primary/30 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Height (px):</label>
+                    <input type="number" id="customHeight" min="300" max="3000" placeholder="Enter height..." 
+                           class="w-full px-4 py-3 text-base border-2 border-primary/30 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300">
+                </div>
+            </div>
+        </div>
+
+        <button id="startDrawingBtn" class="btn-primary w-full text-lg" disabled>
+            Start Drawing Session
+        </button>
+    </div>
+
+    <!-- Drawing Screen -->
+    <div id="drawingScreen" class="hidden">
+        <!-- Header with timer and controls -->
+        <div class="bg-gradient-to-r from-primary/10 to-accent/10 dark:from-primary/20 dark:to-accent/20 border-b-4 border-gradient-to-r from-primary to-accent px-4 py-3">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-center sm:text-left">
+                    <div id="currentPrompt" class="font-medium text-lg text-primary">🎯</div>
+                    <div id="timerDisplay" class="text-2xl font-bold text-accent"></div>
+                </div>
+                <div class="flex gap-2">
+                    <button id="clearBtn" class="bg-gradient-to-r from-warning to-orange-400 hover:from-orange-400 hover:to-warning text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">🗑️ Clear</button>
+                    <button id="stopDrawingBtn" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-500 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">⏹️ Stop</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Drawing Tools -->
+        <div class="bg-gradient-to-r from-secondary/20 to-success/20 dark:from-secondary/30 dark:to-success/30 border-b-2 border-secondary px-4 py-3">
+            <!-- Tool Selection -->
+            <div class="flex items-center justify-center gap-2 mb-4 flex-wrap">
+                <button id="brushTool" class="tool-btn bg-primary text-white px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md text-sm">
+                    🖌️ Brush
+                </button>
+                <button id="eraserTool" class="tool-btn bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md text-sm">
+                    🧽 Eraser
+                </button>
+                <button id="eyedropperTool" class="tool-btn bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md text-sm">
+                    💧 Dropper
+                </button>
+                <button id="lineTool" class="tool-btn bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md text-sm">
+                    📏 Line
+                </button>
+                <button id="rectangleTool" class="tool-btn bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md text-sm">
+                    ⬜ Rectangle
+                </button>
+                <button id="circleTool" class="tool-btn bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md text-sm">
+                    ⭕ Circle
+                </button>
+                <button id="textTool" class="tool-btn bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md text-sm">
+                    📝 Text
+                </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-center gap-2 mb-4 flex-wrap">
+                <button id="undoBtn" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-500 text-white font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md text-sm" title="Undo (Ctrl+Z)">
+                    ↶ Undo
+                </button>
+                <button id="redoBtn" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-500 text-white font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md text-sm" title="Redo (Ctrl+Y)">
+                    ↷ Redo
+                </button>
+                <button id="zoomInBtn" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md text-sm" title="Zoom In (+)">
+                    🔍 Zoom+
+                </button>
+                <button id="zoomOutBtn" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md text-sm" title="Zoom Out (-)">
+                    🔍 Zoom-
+                </button>
+                <button id="resetZoomBtn" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md text-sm" title="Reset Zoom (0)">
+                    🎯 Reset
+                </button>
+                <button id="gridToggleBtn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md text-sm" title="Toggle Grid (G)">
+                    📋 Grid
+                </button>
+            </div>
+
+            <!-- Tool Settings -->
+            <div class="flex items-center justify-center gap-4 flex-wrap">
+                <!-- Brush/Eraser Size -->
+                <div class="flex items-center gap-3 bg-white/70 dark:bg-gray-700/70 rounded-lg px-3 py-2">
+                    <label class="text-sm font-medium text-primary" id="sizeLabel">🖌️ Size:</label>
+                    <input type="range" id="brushSize" min="1" max="50" value="5" 
+                           class="w-20 h-3 bg-gradient-to-r from-secondary to-accent rounded-lg appearance-none cursor-pointer">
+                    <span id="brushSizeValue" class="text-sm font-bold text-accent w-8 bg-white/50 rounded px-2 py-1">5</span>
+                </div>
+
+                <!-- Brush Type -->
+                <div id="brushTypeContainer" class="flex items-center gap-3 bg-white/70 dark:bg-gray-700/70 rounded-lg px-3 py-2">
+                    <label class="text-sm font-medium text-primary">✏️ Brush:</label>
+                    <select id="brushType" class="bg-transparent text-sm font-medium text-accent border-none outline-none cursor-pointer">
+                        <option value="round">Round</option>
+                        <option value="square">Square</option>
+                        <option value="soft">Soft</option>
+                        <option value="spray">Spray</option>
+                    </select>
+                </div>
+
+                <!-- Color Picker -->
+                <div id="colorContainer" class="flex items-center gap-3 bg-white/70 dark:bg-gray-700/70 rounded-lg px-3 py-2">
+                    <label class="text-sm font-medium text-primary">🎨 Color:</label>
+                    <input type="color" id="brushColor" value="#000000" 
+                           class="w-10 h-10 border-3 border-white rounded-full cursor-pointer shadow-lg">
+                </div>
+
+                <!-- RGB Inputs -->
+                <div id="rgbContainer" class="flex items-center gap-2 bg-white/70 dark:bg-gray-700/70 rounded-lg px-3 py-2">
+                    <label class="text-xs font-medium text-primary">RGB:</label>
+                    <div class="flex gap-1">
+                        <input type="number" id="redValue" min="0" max="255" value="0" 
+                               class="w-12 text-xs text-center border border-gray-300 rounded px-1 py-1" placeholder="R">
+                        <input type="number" id="greenValue" min="0" max="255" value="0" 
+                               class="w-12 text-xs text-center border border-gray-300 rounded px-1 py-1" placeholder="G">
+                        <input type="number" id="blueValue" min="0" max="255" value="0" 
+                               class="w-12 text-xs text-center border border-gray-300 rounded px-1 py-1" placeholder="B">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Color Display -->
+            <div class="flex justify-center mt-3">
+                <div class="flex items-center gap-2 bg-white/70 dark:bg-gray-700/70 rounded-lg px-3 py-2">
+                    <span class="text-xs font-medium text-primary">Current:</span>
+                    <div id="currentColorDisplay" class="w-8 h-8 border-2 border-white rounded-full shadow-md" style="background-color: #000000;"></div>
+                    <span id="currentColorHex" class="text-xs font-mono text-accent">#000000</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="flex-1 overflow-hidden p-4">
+            <canvas id="drawingCanvas" class="drawing-canvas block mx-auto border-4 border-gray-400 dark:border-gray-500 rounded-lg shadow-lg"></canvas>
+        </div>
+    </div>
+
+    <!-- Continue Modal -->
+    <div id="continueModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full">
+            <h3 class="text-xl font-semibold mb-4">Time's Up!</h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">Would you like to continue drawing or finish your artwork?</p>
+            <div class="flex gap-3">
+                <button id="continueDrawingBtn" class="btn-secondary flex-1">Continue</button>
+                <button id="finishDrawingBtn" class="btn-primary flex-1">Finish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Modal -->
+    <div id="saveModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full">
+            <h3 class="text-xl font-semibold mb-4">Save Your Drawing</h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">Would you like to save your artwork as a JPG file?</p>
+            <div class="flex gap-3">
+                <button id="dontSaveBtn" class="btn-secondary flex-1">Don't Save</button>
+                <button id="saveDrawingBtn" class="btn-primary flex-1">Save JPG</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Screen -->
+    <div id="tutorialScreen" class="hidden container mx-auto px-4 py-8 max-w-4xl">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-primary mb-4">🎨 Drawing Tutorial & Tips</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400">Master the art of quick sketching and time-based drawing!</p>
+            <button id="backToMainBtn" class="mt-4 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">
+                ← Back to Main
+            </button>
+        </div>
+
+        <div class="grid gap-8">
+            <!-- Getting Started -->
+            <div class="bg-gradient-to-br from-primary/10 to-purple-100 dark:from-primary/20 dark:to-purple-900 border-2 border-primary/30 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-primary mb-4 flex items-center">
+                    🚀 Getting Started
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-accent">Quick Setup Tips</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-primary mr-2">•</span>Start with 1-2 minute sessions to build confidence</li>
+                            <li class="flex items-start"><span class="text-primary mr-2">•</span>Use medium canvas size (1200×900) for most prompts</li>
+                            <li class="flex items-start"><span class="text-primary mr-2">•</span>Enable grid (G key) for better proportions</li>
+                            <li class="flex items-start"><span class="text-primary mr-2">•</span>Keep brush size between 3-8 for sketching</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-accent">Essential Tools</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-secondary mr-2">🖌️</span><strong>Brush (B):</strong> Primary drawing tool</li>
+                            <li class="flex items-start"><span class="text-warning mr-2">🧽</span><strong>Eraser (E):</strong> Clean up mistakes</li>
+                            <li class="flex items-start"><span class="text-success mr-2">📏</span><strong>Line (L):</strong> Straight edges and structure</li>
+                            <li class="flex items-start"><span class="text-accent mr-2">⬜</span><strong>Shapes (R/C):</strong> Quick geometric forms</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Management Strategies -->
+            <div class="bg-gradient-to-br from-warning/10 to-orange-100 dark:from-warning/20 dark:to-orange-900 border-2 border-warning/30 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-warning mb-4 flex items-center">
+                    ⏰ Time Management Strategies
+                </h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-white/50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-3 text-secondary">30 Second Challenge</h3>
+                        <ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                            <li>• Focus on basic shape only</li>
+                            <li>• Use simple lines and curves</li>
+                            <li>• Don't worry about details</li>
+                            <li>• Capture the essence quickly</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white/50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-3 text-accent">1-2 Minute Sketches</h3>
+                        <ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                            <li>• Start with basic shapes</li>
+                            <li>• Add major features</li>
+                            <li>• Include some shading</li>
+                            <li>• Refine proportions</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white/50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-3 text-success">5+ Minute Drawings</h3>
+                        <ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                            <li>• Detailed construction</li>
+                            <li>• Add textures and patterns</li>
+                            <li>• Work on lighting</li>
+                            <li>• Polish and refine</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drawing Fundamentals -->
+            <div class="bg-gradient-to-br from-secondary/10 to-teal-100 dark:from-secondary/20 dark:to-teal-900 border-2 border-secondary/30 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-secondary mb-4 flex items-center">
+                    📐 Drawing Fundamentals
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">Basic Shapes First</h3>
+                        <p class="text-gray-700 dark:text-gray-300 mb-3">Everything can be broken down into basic shapes:</p>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-accent mr-2">⭕</span>Circles for heads, wheels, eyes</li>
+                            <li class="flex items-start"><span class="text-accent mr-2">⬜</span>Rectangles for buildings, books, boxes</li>
+                            <li class="flex items-start"><span class="text-accent mr-2">🔺</span>Triangles for roofs, mountains, arrows</li>
+                            <li class="flex items-start"><span class="text-accent mr-2">🥚</span>Ovals for bodies, faces, leaves</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">Proportions & Guidelines</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-secondary mr-2">•</span>Use light construction lines first</li>
+                            <li class="flex items-start"><span class="text-secondary mr-2">•</span>Check relative sizes constantly</li>
+                            <li class="flex items-start"><span class="text-secondary mr-2">•</span>Use the grid for alignment</li>
+                            <li class="flex items-start"><span class="text-secondary mr-2">•</span>Step back and assess often</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool Mastery -->
+            <div class="bg-gradient-to-br from-accent/10 to-pink-100 dark:from-accent/20 dark:to-pink-900 border-2 border-accent/30 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-accent mb-4 flex items-center">
+                    🛠️ Tool Mastery Guide
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">Brush Techniques</h3>
+                        <div class="space-y-3">
+                            <div class="bg-white/50 dark:bg-gray-700/50 rounded p-3">
+                                <h4 class="font-semibold text-secondary">Round Brush</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Best for organic shapes, outlines, and smooth curves</p>
+                            </div>
+                            <div class="bg-white/50 dark:bg-gray-700/50 rounded p-3">
+                                <h4 class="font-semibold text-secondary">Square Brush</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Perfect for architectural elements and hard edges</p>
+                            </div>
+                            <div class="bg-white/50 dark:bg-gray-700/50 rounded p-3">
+                                <h4 class="font-semibold text-secondary">Soft Brush</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Great for shading, clouds, and atmospheric effects</p>
+                            </div>
+                            <div class="bg-white/50 dark:bg-gray-700/50 rounded p-3">
+                                <h4 class="font-semibold text-secondary">Spray Brush</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Excellent for textures, fur, and stippled effects</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">Advanced Techniques</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-accent mr-2">•</span><strong>Layering:</strong> Build up details gradually</li>
+                            <li class="flex items-start"><span class="text-accent mr-2">•</span><strong>Gesture Drawing:</strong> Capture movement and energy</li>
+                            <li class="flex items-start"><span class="text-accent mr-2">•</span><strong>Negative Space:</strong> Draw what's around the object</li>
+                            <li class="flex items-start"><span class="text-accent mr-2">•</span><strong>Value Studies:</strong> Focus on light and dark areas</li>
+                            <li class="flex items-start"><span class="text-accent mr-2">•</span><strong>Line Weight:</strong> Vary thickness for depth</li>
+                        </ul>
+                        
+                        <h3 class="text-lg font-semibold mb-3 mt-6 text-primary">Shape Tools Strategy</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-warning mr-2">📏</span>Use lines for horizon, structure, guidelines</li>
+                            <li class="flex items-start"><span class="text-success mr-2">⬜</span>Rectangles for buildings, windows, frames</li>
+                            <li class="flex items-start"><span class="text-primary mr-2">⭕</span>Circles for wheels, heads, celestial objects</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approach Different Prompts -->
+            <div class="bg-gradient-to-br from-success/10 to-green-100 dark:from-success/20 dark:to-green-900 border-2 border-success/30 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-success mb-4 flex items-center">
+                    🎯 Approach Different Prompts
+                </h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white/50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="font-semibold text-accent mb-2">🐾 Animals</h3>
+                        <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>• Start with body shape</li>
+                            <li>• Add head and limbs</li>
+                            <li>• Define key features</li>
+                            <li>• Add texture/fur last</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white/50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="font-semibold text-accent mb-2">🏢 Buildings</h3>
+                        <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>• Use rectangle tool</li>
+                            <li>• Establish perspective</li>
+                            <li>• Add windows/doors</li>
+                            <li>• Include surrounding context</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white/50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="font-semibold text-accent mb-2">👤 People</h3>
+                        <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>• Basic stick figure first</li>
+                            <li>• Add volume to limbs</li>
+                            <li>• Define head and torso</li>
+                            <li>• Add facial features</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white/50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="font-semibold text-accent mb-2">🌳 Nature</h3>
+                        <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>• Use organic shapes</li>
+                            <li>• Spray brush for textures</li>
+                            <li>• Layer different elements</li>
+                            <li>• Create depth with overlap</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyboard Shortcuts Reference -->
+            <div class="bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900 dark:to-indigo-900 border-2 border-purple-300 dark:border-purple-600 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-4 flex items-center">
+                    ⌨️ Keyboard Shortcuts Reference
+                </h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">Drawing Tools</h3>
+                        <div class="space-y-1 text-sm">
+                            <div class="flex justify-between"><span>Brush</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">B</kbd></div>
+                            <div class="flex justify-between"><span>Eraser</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">E</kbd></div>
+                            <div class="flex justify-between"><span>Eyedropper</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">I</kbd></div>
+                            <div class="flex justify-between"><span>Line</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">L</kbd></div>
+                            <div class="flex justify-between"><span>Rectangle</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">R</kbd></div>
+                            <div class="flex justify-between"><span>Circle</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">C</kbd></div>
+                            <div class="flex justify-between"><span>Text</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">T</kbd></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">Actions</h3>
+                        <div class="space-y-1 text-sm">
+                            <div class="flex justify-between"><span>Undo</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">Ctrl+Z</kbd></div>
+                            <div class="flex justify-between"><span>Redo</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">Ctrl+Y</kbd></div>
+                            <div class="flex justify-between"><span>Save</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">Ctrl+S</kbd></div>
+                            <div class="flex justify-between"><span>Toggle Grid</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">G</kbd></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">View Controls</h3>
+                        <div class="space-y-1 text-sm">
+                            <div class="flex justify-between"><span>Zoom In</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">+</kbd></div>
+                            <div class="flex justify-between"><span>Zoom Out</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">-</kbd></div>
+                            <div class="flex justify-between"><span>Reset Zoom</span><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">0</kbd></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pro Tips -->
+            <div class="bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900 dark:to-blue-900 border-2 border-indigo-300 dark:border-indigo-600 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-4 flex items-center">
+                    💡 Pro Tips & Mindset
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">Mental Approach</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-indigo-500 mr-2">💭</span>Focus on capturing essence, not perfection</li>
+                            <li class="flex items-start"><span class="text-indigo-500 mr-2">⚡</span>Trust your first instincts</li>
+                            <li class="flex items-start"><span class="text-indigo-500 mr-2">🎯</span>Practice specific weaknesses regularly</li>
+                            <li class="flex items-start"><span class="text-indigo-500 mr-2">🔄</span>Iterate - do the same prompt multiple times</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">Common Mistakes to Avoid</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-red-500 mr-2">⚠️</span>Starting with details before basic shapes</li>
+                            <li class="flex items-start"><span class="text-red-500 mr-2">⚠️</span>Making lines too dark too early</li>
+                            <li class="flex items-start"><span class="text-red-500 mr-2">⚠️</span>Ignoring proportions for "prettiness"</li>
+                            <li class="flex items-start"><span class="text-red-500 mr-2">⚠️</span>Not stepping back to check overall composition</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Practice Exercises -->
+            <div class="bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 border-2 border-orange-300 dark:border-orange-600 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-4 flex items-center">
+                    🏋️ Practice Exercises
+                </h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="bg-white/50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="font-semibold text-accent mb-2">Warm-up (5 min)</h3>
+                        <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>• Draw 10 circles freehand</li>
+                            <li>• Practice straight lines</li>
+                            <li>• Draw basic shapes quickly</li>
+                            <li>• Try different brush types</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white/50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="font-semibold text-accent mb-2">Gesture Practice</h3>
+                        <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>• 30-second gesture drawings</li>
+                            <li>• Focus on movement and flow</li>
+                            <li>• Don't lift your brush often</li>
+                            <li>• Capture energy over accuracy</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white/50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="font-semibold text-accent mb-2">Construction Practice</h3>
+                        <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>• Break complex objects into shapes</li>
+                            <li>• Use geometric construction</li>
+                            <li>• Practice perspective basics</li>
+                            <li>• Focus on proportional relationships</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Screen -->
+    <div id="aboutScreen" class="hidden container mx-auto px-4 py-8 max-w-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-primary mb-4">About Draw & Time</h1>
+            <button id="backToMainFromAboutBtn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">
+                ← Back to Main
+            </button>
+        </div>
+
+        <div class="bg-gradient-to-br from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20 border-2 border-primary/30 rounded-xl p-6 shadow-lg">
+            <h2 class="text-2xl font-bold text-primary mb-4">🎨 What is Draw & Time?</h2>
+            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                Draw & Time is a creative drawing application designed to improve your sketching skills through timed challenges. 
+                The app combines the pressure of time limits with random prompts to push your artistic boundaries and develop 
+                quick observational skills.
+            </p>
+            
+            <h3 class="text-xl font-semibold text-accent mb-3">✨ Features</h3>
+            <ul class="space-y-2 text-gray-700 dark:text-gray-300 mb-6">
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>120+ diverse drawing prompts</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>Professional drawing tools (brush, eraser, shapes, text)</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>Multiple brush types and customizable settings</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>Undo/Redo system with 50-step history</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>Zoom and pan controls for detailed work</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>Grid overlay for better proportions</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>Keyboard shortcuts for efficient workflow</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>Save drawings as JPG with embedded prompt info</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>Dark mode support</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>Touch and mouse support</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold text-accent mb-3">🎯 Why Timed Drawing?</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                Timed drawing exercises help artists develop several crucial skills:
+            </p>
+            <ul class="space-y-2 text-gray-700 dark:text-gray-300 mb-6">
+                <li class="flex items-start"><span class="text-secondary mr-2">•</span><strong>Quick Decision Making:</strong> Learn to make artistic choices rapidly</li>
+                <li class="flex items-start"><span class="text-secondary mr-2">•</span><strong>Essential Observation:</strong> Focus on what's most important in a subject</li>
+                <li class="flex items-start"><span class="text-secondary mr-2">•</span><strong>Confidence Building:</strong> Overcome the fear of "imperfect" drawings</li>
+                <li class="flex items-start"><span class="text-secondary mr-2">•</span><strong>Gestural Fluency:</strong> Develop natural, flowing line work</li>
+                <li class="flex items-start"><span class="text-secondary mr-2">•</span><strong>Creative Problem Solving:</strong> Find innovative ways to represent complex subjects</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold text-accent mb-3">💡 Tips for Success</h3>
+            <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                <li class="flex items-start"><span class="text-success mr-2">•</span>Start with longer time limits and gradually decrease</li>
+                <li class="flex items-start"><span class="text-success mr-2">•</span>Focus on capturing the essence rather than perfection</li>
+                <li class="flex items-start"><span class="text-success mr-2">•</span>Practice the same prompt multiple times to see improvement</li>
+                <li class="flex items-start"><span class="text-success mr-2">•</span>Use the tutorial section to learn specific techniques</li>
+                <li class="flex items-start"><span class="text-success mr-2">•</span>Don't be afraid to experiment with different tools and styles</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Drawing prompts
+        const prompts = [
+            "Animal", "Vehicle", "Food", "Building", "Plant", "Technology",
+            "Sea Creature", "Musical Instrument", "Tool", "Furniture", "Toy",
+            "Weather", "Sport", "Clothing", "Bird", "Insect", "Machine",
+            "Fruit", "Vegetable", "Landscape", "Monster", "Robot", "Castle",
+            "Bridge", "Mountain", "Forest", "Desert", "City", "Space",
+            "Ocean", "River", "Tree", "Flower", "Computer", "Phone",
+            "Car", "Airplane", "Boat", "House", "School", "Park",
+            "Face", "Portrait", "Character", "Superhero", "Villain", "Wizard",
+            "Dragon", "Unicorn", "Fantasy Creature", "Alien", "Ghost", "Angel",
+            "Demon", "Warrior", "Knight", "Princess", "King", "Queen",
+            "Chef", "Doctor", "Teacher", "Scientist", "Artist", "Musician",
+            "Dancer", "Athlete", "Pirate", "Ninja", "Cowboy", "Astronaut",
+            "Holiday", "Party", "Celebration", "Festival", "Wedding", "Birthday",
+            "Christmas", "Halloween", "Easter", "Thanksgiving", "New Year",
+            "Spring", "Summer", "Autumn", "Winter", "Sunrise", "Sunset",
+            "Rainbow", "Storm", "Lightning", "Snow", "Rain", "Cloud",
+            "Star", "Moon", "Sun", "Planet", "Galaxy", "Comet",
+            "Jewelry", "Crown", "Ring", "Necklace", "Treasure", "Gold",
+            "Silver", "Diamond", "Ruby", "Emerald", "Pearl", "Crystal",
+            "Book", "Library", "School", "Classroom", "Laboratory", "Hospital",
+            "Restaurant", "Cafe", "Market", "Store", "Factory", "Farm",
+            "Garden", "Playground", "Stadium", "Theater", "Museum", "Gallery",
+            "Beach", "Island", "Lake", "Waterfall", "Cave", "Valley",
+            "Hill", "Cliff", "Volcano", "Glacier", "Jungle", "Safari",
+            "Zoo", "Aquarium", "Circus", "Carnival", "Fair", "Parade"
+        ];
+
+        // Enhanced App state
+        let currentPrompt = '';
+        let selectedTime = 0;
+        let timer = null;
+        let timeLeft = 0;
+        let drawing = false;
+
+        // Enhanced Drawing state
+        let currentTool = 'brush'; // 'brush', 'eraser', 'eyedropper', 'line', 'rectangle', 'circle', 'text'
+        let currentBrushType = 'round';
+        let currentColor = '#000000';
+
+        // Enhanced Canvas state
+        let canvasWidth = 1200;
+        let canvasHeight = 900;
+        let startTime = null;
+        let zoomLevel = 1;
+        let panX = 0;
+        let panY = 0;
+
+        // Canvas setup
+        let canvas, ctx;
+
+        // Undo/Redo system
+        let undoStack = [];
+        let redoStack = [];
+        const maxUndoSteps = 50;
+
+        // Shape drawing state
+        let isDrawingShape = false;
+        let shapeStartX = 0;
+        let shapeStartY = 0;
+        let tempCanvas = null;
+        let tempCtx = null;
+
+        // Text tool state
+        let textInput = null;
+
+        // Grid functionality
+        let gridVisible = false;
+
+        // DOM elements
+        const setupScreen = document.getElementById('setupScreen');
+        const drawingScreen = document.getElementById('drawingScreen');
+        const promptDisplay = document.getElementById('promptDisplay');
+        const getPromptBtn = document.getElementById('getPromptBtn');
+        const timerBtns = document.querySelectorAll('.timer-btn');
+        const customTimeInput = document.getElementById('customTime');
+        const startDrawingBtn = document.getElementById('startDrawingBtn');
+        const canvasBtns = document.querySelectorAll('.canvas-btn');
+        const customWidthInput = document.getElementById('customWidth');
+        const customHeightInput = document.getElementById('customHeight');
+        const currentPromptEl = document.getElementById('currentPrompt');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const clearBtn = document.getElementById('clearBtn');
+        const stopDrawingBtn = document.getElementById('stopDrawingBtn');
+        const continueModal = document.getElementById('continueModal');
+        const saveModal = document.getElementById('saveModal');
+        const brushSize = document.getElementById('brushSize');
+        const brushSizeValue = document.getElementById('brushSizeValue');
+        const brushColor = document.getElementById('brushColor');
+        
+        // Tool elements
+        const brushTool = document.getElementById('brushTool');
+        const eraserTool = document.getElementById('eraserTool');
+        const eyedropperTool = document.getElementById('eyedropperTool');
+        const lineTool = document.getElementById('lineTool');
+        const rectangleTool = document.getElementById('rectangleTool');
+        const circleTool = document.getElementById('circleTool');
+        const textTool = document.getElementById('textTool');
+        const brushType = document.getElementById('brushType');
+        const sizeLabel = document.getElementById('sizeLabel');
+        const brushTypeContainer = document.getElementById('brushTypeContainer');
+        const colorContainer = document.getElementById('colorContainer');
+        const rgbContainer = document.getElementById('rgbContainer');
+        const redValue = document.getElementById('redValue');
+        const greenValue = document.getElementById('greenValue');
+        const blueValue = document.getElementById('blueValue');
+        const currentColorDisplay = document.getElementById('currentColorDisplay');
+        const currentColorHex = document.getElementById('currentColorHex');
+
+        // Action buttons
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const resetZoomBtn = document.getElementById('resetZoomBtn');
+        const gridToggleBtn = document.getElementById('gridToggleBtn');
+
+        // Initialize
+        function init() {
+            setupCanvas();
+            setupEventListeners();
+        }
+
+        function setupCanvas() {
+            canvas = document.getElementById('drawingCanvas');
+            ctx = canvas.getContext('2d');
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+        function resizeCanvas() {
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            const container = canvas.parentElement;
+            const containerWidth = window.innerWidth - 40;
+            const containerHeight = window.innerHeight - 200;
+            
+            const scaleX = containerWidth / canvasWidth;
+            const scaleY = containerHeight / canvasHeight;
+            const scale = Math.min(scaleX, scaleY, 1);
+            
+            canvas.style.width = (canvasWidth * scale) + 'px';
+            canvas.style.height = (canvasHeight * scale) + 'px';
+            
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Save initial state for undo
+            saveCanvasState();
+        }
+
+        function setupEventListeners() {
+            // Setup screen
+            getPromptBtn.addEventListener('click', generatePrompt);
+            timerBtns.forEach(btn => {
+                btn.addEventListener('click', () => selectTime(parseInt(btn.dataset.time)));
+            });
+            customTimeInput.addEventListener('input', handleCustomTime);
+            startDrawingBtn.addEventListener('click', startDrawing);
+
+            // Canvas size selection
+            canvasBtns.forEach(btn => {
+                btn.addEventListener('click', () => selectCanvasSize(parseInt(btn.dataset.width), parseInt(btn.dataset.height)));
+            });
+            customWidthInput.addEventListener('input', handleCustomCanvasSize);
+            customHeightInput.addEventListener('input', handleCustomCanvasSize);
+
+            // Drawing screen
+            clearBtn.addEventListener('click', clearCanvas);
+            stopDrawingBtn.addEventListener('click', stopDrawing);
+            
+            // Canvas events
+            canvas.addEventListener('mousedown', startDrawingMouse);
+            canvas.addEventListener('mousemove', drawMouse);
+            canvas.addEventListener('mouseup', stopDrawingMouse);
+            canvas.addEventListener('mouseout', stopDrawingMouse);
+            
+            canvas.addEventListener('touchstart', startDrawingTouch);
+            canvas.addEventListener('touchmove', drawTouch);
+            canvas.addEventListener('touchend', stopDrawingTouch);
+
+            // Tool controls
+            brushSize.addEventListener('input', updateBrushSize);
+            brushColor.addEventListener('change', updateBrushColor);
+
+            // Tool selection
+            brushTool.addEventListener('click', () => selectTool('brush'));
+            eraserTool.addEventListener('click', () => selectTool('eraser'));
+            eyedropperTool.addEventListener('click', () => selectTool('eyedropper'));
+            lineTool.addEventListener('click', () => selectTool('line'));
+            rectangleTool.addEventListener('click', () => selectTool('rectangle'));
+            circleTool.addEventListener('click', () => selectTool('circle'));
+            textTool.addEventListener('click', () => selectTool('text'));
+
+            // Action buttons
+            undoBtn.addEventListener('click', undo);
+            redoBtn.addEventListener('click', redo);
+            zoomInBtn.addEventListener('click', zoomIn);
+            zoomOutBtn.addEventListener('click', zoomOut);
+            resetZoomBtn.addEventListener('click', resetZoom);
+            gridToggleBtn.addEventListener('click', toggleGrid);
+
+            // Brush type
+            brushType.addEventListener('change', updateBrushType);
+
+            // RGB inputs
+            redValue.addEventListener('input', updateFromRGB);
+            greenValue.addEventListener('input', updateFromRGB);
+            blueValue.addEventListener('input', updateFromRGB);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyboardShortcuts);
+
+            // Modal buttons
+            document.getElementById('continueDrawingBtn').addEventListener('click', continueDraw);
+            document.getElementById('finishDrawingBtn').addEventListener('click', finishDrawing);
+            document.getElementById('saveDrawingBtn').addEventListener('click', saveDrawing);
+            document.getElementById('dontSaveBtn').addEventListener('click', dontSave);
+
+            // Navigation buttons
+            document.getElementById('tutorialBtn').addEventListener('click', showTutorial);
+            document.getElementById('aboutBtn').addEventListener('click', showAbout);
+            document.getElementById('backToMainBtn').addEventListener('click', showMain);
+            document.getElementById('backToMainFromAboutBtn').addEventListener('click', showMain);
+        }
+
+        // Undo/Redo system
+        function saveCanvasState() {
+            if (undoStack.length >= maxUndoSteps) {
+                undoStack.shift();
+            }
+            undoStack.push(canvas.toDataURL());
+            redoStack = [];
+        }
+
+        function undo() {
+            if (undoStack.length > 1) {
+                redoStack.push(undoStack.pop());
+                const previousState = undoStack[undoStack.length - 1];
+                restoreCanvasState(previousState);
+            }
+        }
+
+        function redo() {
+            if (redoStack.length > 0) {
+                const nextState = redoStack.pop();
+                undoStack.push(nextState);
+                restoreCanvasState(nextState);
+            }
+        }
+
+        function restoreCanvasState(imageData) {
+            const img = new Image();
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = imageData;
+        }
+
+        // Zoom functions
+        function zoomIn() {
+            zoomLevel = Math.min(zoomLevel * 1.2, 5);
+            applyZoom();
+        }
+
+        function zoomOut() {
+            zoomLevel = Math.max(zoomLevel / 1.2, 0.1);
+            applyZoom();
+        }
+
+        function resetZoom() {
+            zoomLevel = 1;
+            panX = 0;
+            panY = 0;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            canvas.style.transform = `scale(${zoomLevel}) translate(${panX}px, ${panY}px)`;
+        }
+
+        // Grid functionality
+        function toggleGrid() {
+            gridVisible = !gridVisible;
+            if (gridVisible) {
+                drawGrid();
+                gridToggleBtn.style.backgroundColor = '#10B981';
+            } else {
+                clearGrid();
+                gridToggleBtn.style.backgroundColor = '';
+            }
+        }
+
+        function drawGrid() {
+            const gridSize = 20;
+            ctx.save();
+            ctx.strokeStyle = '#E5E5E5';
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.5;
+            
+            for (let x = 0; x <= canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y <= canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            ctx.restore();
+        }
+
+        function clearGrid() {
+            // Grid is overlay only, redraw canvas without it
+        }
+
+        // Keyboard shortcuts
+        function handleKeyboardShortcuts(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key.toLowerCase()) {
+                    case 'z':
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                            redo();
+                        } else {
+                            undo();
+                        }
+                        break;
+                    case 'y':
+                        e.preventDefault();
+                        redo();
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        saveDrawing();
+                        break;
+                }
+            } else {
+                switch(e.key.toLowerCase()) {
+                    case 'b': selectTool('brush'); break;
+                    case 'e': selectTool('eraser'); break;
+                    case 'i': selectTool('eyedropper'); break;
+                    case 'l': selectTool('line'); break;
+                    case 'r': selectTool('rectangle'); break;
+                    case 'c': selectTool('circle'); break;
+                    case 't': selectTool('text'); break;
+                    case 'g': toggleGrid(); break;
+                    case '+':
+                    case '=': zoomIn(); break;
+                    case '-': zoomOut(); break;
+                    case '0': resetZoom(); break;
+                }
+            }
+        }
+
+        // Shape drawing functions
+        function startShapeDrawing(x, y) {
+            saveCanvasState();
+            isDrawingShape = true;
+            shapeStartX = x;
+            shapeStartY = y;
+            
+            if (!tempCanvas) {
+                tempCanvas = document.createElement('canvas');
+                tempCtx = tempCanvas.getContext('2d');
+            }
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            tempCtx.drawImage(canvas, 0, 0);
+        }
+
+        function drawShape(endX, endY) {
+            if (!isDrawingShape) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(tempCanvas, 0, 0);
+            
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = brushSize.value;
+            ctx.beginPath();
+            
+            const width = endX - shapeStartX;
+            const height = endY - shapeStartY;
+            
+            switch(currentTool) {
+                case 'line':
+                    ctx.moveTo(shapeStartX, shapeStartY);
+                    ctx.lineTo(endX, endY);
+                    break;
+                case 'rectangle':
+                    ctx.rect(shapeStartX, shapeStartY, width, height);
+                    break;
+                case 'circle':
+                    const radius = Math.sqrt(width * width + height * height);
+                    ctx.arc(shapeStartX, shapeStartY, radius, 0, 2 * Math.PI);
+                    break;
+            }
+            
+            ctx.stroke();
+        }
+
+        function finishShape() {
+            isDrawingShape = false;
+        }
+
+        // Text tool functions
+        function addText(x, y) {
+            if (textInput) {
+                removeTextInput();
+            }
+            
+            textInput = document.createElement('input');
+            textInput.type = 'text';
+            textInput.placeholder = 'Enter text...';
+            textInput.className = 'absolute bg-white border-2 border-primary rounded px-2 py-1 text-black z-50';
+            textInput.style.left = (x + canvas.offsetLeft) + 'px';
+            textInput.style.top = (y + canvas.offsetTop) + 'px';
+            textInput.style.fontSize = brushSize.value + 'px';
+            
+            document.body.appendChild(textInput);
+            textInput.focus();
+            
+            textInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    if (textInput.value.trim()) {
+                        saveCanvasState();
+                        ctx.fillStyle = currentColor;
+                        ctx.font = `${brushSize.value}px Arial, sans-serif`;
+                        ctx.fillText(textInput.value, x, y);
+                    }
+                    removeTextInput();
+                } else if (e.key === 'Escape') {
+                    removeTextInput();
+                }
+            });
+            
+            textInput.addEventListener('blur', function() {
+                setTimeout(removeTextInput, 100);
+            });
+        }
+
+        function removeTextInput() {
+            if (textInput) {
+                textInput.remove();
+                textInput = null;
+            }
+        }
+
+        // Rest of the functions remain the same as original...
+        function generatePrompt() {
+            currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+            promptDisplay.textContent = currentPrompt;
+            checkCanStart();
+        }
+
+        function selectTime(time) {
+            selectedTime = time;
+            customTimeInput.value = '';
+            
+            timerBtns.forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('btn-secondary');
+            });
+            event.target.classList.remove('btn-secondary');
+            event.target.classList.add('bg-primary', 'text-white');
+            
+            checkCanStart();
+        }
+
+        function selectCanvasSize(width, height) {
+            canvasWidth = width;
+            canvasHeight = height;
+            customWidthInput.value = '';
+            customHeightInput.value = '';
+            
+            canvasBtns.forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-primary');
+            });
+            event.target.classList.add('ring-4', 'ring-primary');
+        }
+
+        function handleCustomCanvasSize() {
+            const width = parseInt(customWidthInput.value);
+            const height = parseInt(customHeightInput.value);
+            
+            if (width >= 400 && height >= 300) {
+                canvasWidth = width;
+                canvasHeight = height;
+                
+                canvasBtns.forEach(btn => {
+                    btn.classList.remove('ring-4', 'ring-primary');
+                });
+            }
+        }
+
+        function handleCustomTime() {
+            const time = parseInt(customTimeInput.value);
+            if (time >= 10) {
+                selectedTime = time;
+                
+                timerBtns.forEach(btn => {
+                    btn.classList.remove('bg-primary', 'text-white');
+                    btn.classList.add('btn-secondary');
+                });
+                
+                checkCanStart();
+            }
+        }
+
+        function checkCanStart() {
+            startDrawingBtn.disabled = !currentPrompt || selectedTime <= 0;
+            if (!startDrawingBtn.disabled) {
+                startDrawingBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                startDrawingBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function startDrawing() {
+            setupScreen.classList.add('hidden');
+            drawingScreen.classList.remove('hidden');
+            
+            currentPromptEl.textContent = currentPrompt;
+            timeLeft = selectedTime;
+            startTime = new Date();
+            updateTimerDisplay();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    showContinueModal();
+                }
+            }, 1000);
+
+            resizeCanvas();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 10) {
+                timerDisplay.classList.add('text-red-500');
+            } else {
+                timerDisplay.classList.remove('text-red-500');
+            }
+        }
+
+        function clearCanvas() {
+            saveCanvasState();
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function stopDrawing() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+            showSaveModal();
+        }
+
+        function showContinueModal() {
+            continueModal.classList.remove('hidden');
+        }
+
+        function continueDraw() {
+            continueModal.classList.add('hidden');
+        }
+
+        function finishDrawing() {
+            continueModal.classList.add('hidden');
+            showSaveModal();
+        }
+
+        function showSaveModal() {
+            saveModal.classList.remove('hidden');
+        }
+
+        function saveDrawing() {
+            const saveCanvas = document.createElement('canvas');
+            const saveCtx = saveCanvas.getContext('2d');
+            
+            const infoBoxHeight = 80;
+            saveCanvas.width = canvas.width;
+            saveCanvas.height = canvas.height + infoBoxHeight;
+            
+            saveCtx.drawImage(canvas, 0, 0);
+            
+            saveCtx.fillStyle = 'white';
+            saveCtx.fillRect(0, canvas.height, canvas.width, infoBoxHeight);
+            
+            saveCtx.strokeStyle = '#E5E5E5';
+            saveCtx.lineWidth = 2;
+            saveCtx.strokeRect(0, canvas.height, canvas.width, infoBoxHeight);
+            
+            const currentDate = startTime ? startTime.toLocaleString() : new Date().toLocaleString();
+            const promptText = `Prompt: ${currentPrompt}`;
+            const dateText = `Created: ${currentDate}`;
+            
+            saveCtx.fillStyle = '#333333';
+            saveCtx.textAlign = 'left';
+            
+            saveCtx.font = 'bold 18px Arial, sans-serif';
+            saveCtx.fillText(promptText, 20, canvas.height + 25);
+            
+            saveCtx.font = '14px Arial, sans-serif';
+            saveCtx.fillText(dateText, 20, canvas.height + 50);
+            
+            const sizeText = `Canvas: ${canvas.width}×${canvas.height}px`;
+            saveCtx.fillText(sizeText, 20, canvas.height + 70);
+            
+            const link = document.createElement('a');
+            link.download = `drawing-${currentPrompt.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-${Date.now()}.jpg`;
+            link.href = saveCanvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+            
+            dontSave();
+        }
+
+        function dontSave() {
+            saveModal.classList.add('hidden');
+            resetApp();
+        }
+
+        function resetApp() {
+            drawingScreen.classList.add('hidden');
+            setupScreen.classList.remove('hidden');
+            
+            currentPrompt = '';
+            selectedTime = 0;
+            promptDisplay.textContent = 'Click "Get Prompt" to start!';
+            customTimeInput.value = '';
+            
+            timerBtns.forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('btn-secondary');
+            });
+            
+            checkCanStart();
+        }
+
+        // Tool functions
+        function selectTool(tool) {
+            currentTool = tool;
+            
+            const allToolBtns = document.querySelectorAll('.tool-btn');
+            allToolBtns.forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('bg-gray-300', 'dark:bg-gray-600', 'text-gray-700', 'dark:text-gray-300');
+            });
+            
+            let selectedBtn;
+            switch(tool) {
+                case 'brush': selectedBtn = brushTool; break;
+                case 'eraser': selectedBtn = eraserTool; break;
+                case 'eyedropper': selectedBtn = eyedropperTool; break;
+                case 'line': selectedBtn = lineTool; break;
+                case 'rectangle': selectedBtn = rectangleTool; break;
+                case 'circle': selectedBtn = circleTool; break;
+                case 'text': selectedBtn = textTool; break;
+            }
+            
+            if (selectedBtn) {
+                selectedBtn.classList.remove('bg-gray-300', 'dark:bg-gray-600', 'text-gray-700', 'dark:text-gray-300');
+                selectedBtn.classList.add('bg-primary', 'text-white');
+            }
+            
+            updateToolUI();
+            updateCanvasCursor();
+        }
+
+        function updateToolUI() {
+            if (currentTool === 'brush') {
+                sizeLabel.textContent = '🖌️ Size:';
+                brushTypeContainer.style.display = 'flex';
+                colorContainer.style.display = 'flex';
+                rgbContainer.style.display = 'flex';
+            } else if (currentTool === 'eraser') {
+                sizeLabel.textContent = '🧽 Size:';
+                brushTypeContainer.style.display = 'none';
+                colorContainer.style.display = 'none';
+                rgbContainer.style.display = 'none';
+            } else if (currentTool === 'eyedropper') {
+                sizeLabel.textContent = '💧 Area:';
+                brushTypeContainer.style.display = 'none';
+                colorContainer.style.display = 'flex';
+                rgbContainer.style.display = 'flex';
+            } else if (currentTool === 'line' || currentTool === 'rectangle' || currentTool === 'circle') {
+                sizeLabel.textContent = '📏 Width:';
+                brushTypeContainer.style.display = 'none';
+                colorContainer.style.display = 'flex';
+                rgbContainer.style.display = 'flex';
+            } else if (currentTool === 'text') {
+                sizeLabel.textContent = '📝 Size:';
+                brushTypeContainer.style.display = 'none';
+                colorContainer.style.display = 'flex';
+                rgbContainer.style.display = 'flex';
+            }
+        }
+
+        function updateCanvasCursor() {
+            switch(currentTool) {
+                case 'brush': canvas.style.cursor = 'crosshair'; break;
+                case 'eraser': canvas.style.cursor = 'grab'; break;
+                case 'eyedropper': canvas.style.cursor = 'cell'; break;
+                case 'line':
+                case 'rectangle':
+                case 'circle': canvas.style.cursor = 'crosshair'; break;
+                case 'text': canvas.style.cursor = 'text'; break;
+                default: canvas.style.cursor = 'default';
+            }
+        }
+
+        function updateBrushType() {
+            currentBrushType = brushType.value;
+        }
+
+        function updateBrushSize() {
+            brushSizeValue.textContent = brushSize.value;
+        }
+
+        function updateBrushColor() {
+            currentColor = brushColor.value;
+            updateColorDisplay();
+            updateRGBFromHex();
+        }
+
+        function updateFromRGB() {
+            const r = parseInt(redValue.value) || 0;
+            const g = parseInt(greenValue.value) || 0;
+            const b = parseInt(blueValue.value) || 0;
+            
+            currentColor = rgbToHex(r, g, b);
+            brushColor.value = currentColor;
+            updateColorDisplay();
+        }
+
+        function updateColorDisplay() {
+            currentColorDisplay.style.backgroundColor = currentColor;
+            currentColorHex.textContent = currentColor.toUpperCase();
+        }
+
+        function updateRGBFromHex() {
+            const rgb = hexToRgb(currentColor);
+            redValue.value = rgb.r;
+            greenValue.value = rgb.g;
+            blueValue.value = rgb.b;
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : {r: 0, g: 0, b: 0};
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+
+        function getPixelColor(x, y) {
+            const imageData = ctx.getImageData(x, y, 1, 1);
+            const data = imageData.data;
+            return rgbToHex(data[0], data[1], data[2]);
+        }
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        function getTouchPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            return {
+                x: (e.touches[0].clientX - rect.left) * scaleX,
+                y: (e.touches[0].clientY - rect.top) * scaleY
+            };
+        }
+
+        function startDrawingMouse(e) {
+            const pos = getMousePos(e);
+            
+            if (currentTool === 'eyedropper') {
+                const pickedColor = getPixelColor(pos.x, pos.y);
+                currentColor = pickedColor;
+                brushColor.value = currentColor;
+                updateColorDisplay();
+                updateRGBFromHex();
+                return;
+            }
+            
+            if (currentTool === 'text') {
+                addText(pos.x, pos.y);
+                return;
+            }
+            
+            if (currentTool === 'line' || currentTool === 'rectangle' || currentTool === 'circle') {
+                startShapeDrawing(pos.x, pos.y);
+                return;
+            }
+            
+            if (currentTool === 'brush' || currentTool === 'eraser') {
+                saveCanvasState();
+            }
+            
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            
+            if (currentTool === 'brush') {
+                setupBrushStyle();
+            } else if (currentTool === 'eraser') {
+                setupEraserStyle();
+            }
+        }
+
+        function drawMouse(e) {
+            if (!drawing && !isDrawingShape) return;
+            e.preventDefault();
+            
+            const pos = getMousePos(e);
+            
+            if (isDrawingShape) {
+                drawShape(pos.x, pos.y);
+                return;
+            }
+            
+            if (currentTool === 'brush') {
+                drawWithBrush(pos.x, pos.y);
+            } else if (currentTool === 'eraser') {
+                eraseAtPosition(pos.x, pos.y);
+            }
+        }
+
+        function stopDrawingMouse() {
+            drawing = false;
+            if (isDrawingShape) {
+                finishShape();
+            }
+            if (currentTool === 'brush' || currentTool === 'eraser') {
+                ctx.beginPath();
+            }
+        }
+
+        function startDrawingTouch(e) {
+            e.preventDefault();
+            const pos = getTouchPos(e);
+            
+            if (currentTool === 'eyedropper') {
+                const pickedColor = getPixelColor(pos.x, pos.y);
+                currentColor = pickedColor;
+                brushColor.value = currentColor;
+                updateColorDisplay();
+                updateRGBFromHex();
+                return;
+            }
+            
+            if (currentTool === 'text') {
+                addText(pos.x, pos.y);
+                return;
+            }
+            
+            if (currentTool === 'line' || currentTool === 'rectangle' || currentTool === 'circle') {
+                startShapeDrawing(pos.x, pos.y);
+                return;
+            }
+            
+            if (currentTool === 'brush' || currentTool === 'eraser') {
+                saveCanvasState();
+            }
+            
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            
+            if (currentTool === 'brush') {
+                setupBrushStyle();
+            } else if (currentTool === 'eraser') {
+                setupEraserStyle();
+            }
+        }
+
+        function drawTouch(e) {
+            if (!drawing && !isDrawingShape) return;
+            e.preventDefault();
+            
+            const pos = getTouchPos(e);
+            
+            if (isDrawingShape) {
+                drawShape(pos.x, pos.y);
+                return;
+            }
+            
+            if (currentTool === 'brush') {
+                drawWithBrush(pos.x, pos.y);
+            } else if (currentTool === 'eraser') {
+                eraseAtPosition(pos.x, pos.y);
+            }
+        }
+
+        function stopDrawingTouch(e) {
+            e.preventDefault();
+            drawing = false;
+            if (isDrawingShape) {
+                finishShape();
+            }
+            if (currentTool === 'brush' || currentTool === 'eraser') {
+                ctx.beginPath();
+            }
+        }
+
+        function setupBrushStyle() {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.lineWidth = brushSize.value;
+            ctx.strokeStyle = currentColor;
+            
+            if (currentBrushType === 'round') {
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+            } else if (currentBrushType === 'square') {
+                ctx.lineCap = 'square';
+                ctx.lineJoin = 'miter';
+            } else if (currentBrushType === 'soft') {
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.shadowColor = currentColor;
+                ctx.shadowBlur = brushSize.value / 3;
+            }
+        }
+
+        function setupEraserStyle() {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineWidth = brushSize.value;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+        function drawWithBrush(x, y) {
+            if (currentBrushType === 'spray') {
+                drawSprayBrush(x, y);
+            } else {
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                
+                if (currentBrushType !== 'soft') {
+                    ctx.shadowBlur = 0;
+                }
+            }
+        }
+
+        function drawSprayBrush(x, y) {
+            const density = 20;
+            const radius = brushSize.value / 2;
+            
+            ctx.save();
+            ctx.fillStyle = currentColor;
+            
+            for (let i = 0; i < density; i++) {
+                const offsetX = (Math.random() - 0.5) * radius * 2;
+                const offsetY = (Math.random() - 0.5) * radius * 2;
+                
+                ctx.beginPath();
+                ctx.arc(x + offsetX, y + offsetY, 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.restore();
+        }
+
+        function eraseAtPosition(x, y) {
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        // Navigation functions
+        function showTutorial() {
+            setupScreen.classList.add('hidden');
+            document.getElementById('tutorialScreen').classList.remove('hidden');
+            document.getElementById('aboutScreen').classList.add('hidden');
+        }
+
+        function showAbout() {
+            setupScreen.classList.add('hidden');
+            document.getElementById('tutorialScreen').classList.add('hidden');
+            document.getElementById('aboutScreen').classList.remove('hidden');
+        }
+
+        function showMain() {
+            setupScreen.classList.remove('hidden');
+            document.getElementById('tutorialScreen').classList.add('hidden');
+            document.getElementById('aboutScreen').classList.add('hidden');
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
