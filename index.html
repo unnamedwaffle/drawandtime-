@@ -25,6 +25,27 @@
             touch-action: none;
             cursor: crosshair;
         }
+        
+        /* Prevent scrolling on drawing screen */
+        #drawingScreen {
+            touch-action: none;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        /* Prevent scroll on body when drawing */
+        body.drawing-mode {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+        
         .btn-primary {
             @apply bg-gradient-to-r from-primary to-purple-600 hover:from-purple-600 hover:to-primary text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg;
         }
@@ -222,8 +243,8 @@
         </div>
 
         <!-- Canvas Container -->
-        <div class="flex-1 overflow-hidden p-4">
-            <canvas id="drawingCanvas" class="drawing-canvas block mx-auto border-4 border-gray-400 dark:border-gray-500 rounded-lg shadow-lg"></canvas>
+        <div class="flex-1 overflow-hidden p-4" style="height: calc(100vh - 300px); touch-action: none;">
+            <canvas id="drawingCanvas" class="drawing-canvas block mx-auto border-4 border-gray-400 dark:border-gray-500 rounded-lg shadow-lg" style="touch-action: none;"></canvas>
         </div>
     </div>
 
@@ -792,15 +813,17 @@
             clearBtn.addEventListener('click', clearCanvas);
             stopDrawingBtn.addEventListener('click', stopDrawing);
             
-            // Canvas events
+            // Canvas events with enhanced touch handling
             canvas.addEventListener('mousedown', startDrawingMouse);
             canvas.addEventListener('mousemove', drawMouse);
             canvas.addEventListener('mouseup', stopDrawingMouse);
             canvas.addEventListener('mouseout', stopDrawingMouse);
             
-            canvas.addEventListener('touchstart', startDrawingTouch);
-            canvas.addEventListener('touchmove', drawTouch);
-            canvas.addEventListener('touchend', stopDrawingTouch);
+            // Enhanced touch event handling for tablet support
+            canvas.addEventListener('touchstart', startDrawingTouch, { passive: false });
+            canvas.addEventListener('touchmove', drawTouch, { passive: false });
+            canvas.addEventListener('touchend', stopDrawingTouch, { passive: false });
+            canvas.addEventListener('touchcancel', stopDrawingTouch, { passive: false });
 
             // Tool controls
             brushSize.addEventListener('input', updateBrushSize);
@@ -1149,6 +1172,9 @@
             setupScreen.classList.add('hidden');
             drawingScreen.classList.remove('hidden');
             
+            // Add drawing mode class to body to prevent scrolling
+            document.body.classList.add('drawing-mode');
+            
             currentPromptEl.textContent = currentPrompt;
             timeLeft = selectedTime;
             startTime = new Date();
@@ -1259,6 +1285,9 @@
         function resetApp() {
             drawingScreen.classList.add('hidden');
             setupScreen.classList.remove('hidden');
+            
+            // Remove drawing mode class from body
+            document.body.classList.remove('drawing-mode');
             
             currentPrompt = '';
             selectedTime = 0;
@@ -1487,8 +1516,11 @@
             }
         }
 
+        // Enhanced touch event handlers with better tablet support
         function startDrawingTouch(e) {
             e.preventDefault();
+            e.stopPropagation();
+            
             const pos = getTouchPos(e);
             
             if (currentTool === 'eyedropper') {
@@ -1528,6 +1560,7 @@
         function drawTouch(e) {
             if (!drawing && !isDrawingShape) return;
             e.preventDefault();
+            e.stopPropagation();
             
             const pos = getTouchPos(e);
             
@@ -1545,6 +1578,8 @@
 
         function stopDrawingTouch(e) {
             e.preventDefault();
+            e.stopPropagation();
+            
             drawing = false;
             if (isDrawingShape) {
                 finishShape();
