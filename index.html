@@ -1377,7 +1377,8 @@
         }
 
         function undo() {
-            if (undoStack.length > 1) {
+            // Only allow undo if there are at least 2 states (initial + at least one drawing operation)
+            if (undoStack.length > 2) {
                 redoStack.push(undoStack.pop());
                 const previousState = undoStack[undoStack.length - 1];
                 restoreCanvasState(previousState);
@@ -1800,6 +1801,11 @@
         function selectTool(tool) {
             currentTool = tool;
             
+            // Reset canvas context when switching tools
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+            
             const allToolBtns = document.querySelectorAll('.tool-btn');
             allToolBtns.forEach(btn => {
                 btn.classList.remove('bg-primary', 'text-white');
@@ -2087,6 +2093,7 @@
             ctx.globalCompositeOperation = 'source-over';
             ctx.lineWidth = brushSize.value;
             ctx.strokeStyle = currentColor;
+            ctx.shadowBlur = 0; // Reset any shadow
             
             if (currentBrushType === 'round') {
                 ctx.lineCap = 'round';
@@ -2107,7 +2114,8 @@
             ctx.lineWidth = brushSize.value;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-            ctx.shadowBlur = 0; // Reset any shadow from soft brush
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
         }
 
         function drawWithBrush(x, y) {
