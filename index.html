@@ -26,23 +26,9 @@
             cursor: crosshair;
         }
         
-        /* Prevent scrolling on drawing screen */
-        #drawingScreen {
-            touch-action: none;
+        /* Allow scrolling normally, prevent only during active drawing */
+        body.drawing-active {
             overflow: hidden;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-        }
-        
-        /* Prevent scroll on body when drawing */
-        body.drawing-mode {
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
             touch-action: none;
         }
         
@@ -243,7 +229,7 @@
         </div>
 
         <!-- Canvas Container -->
-        <div class="flex-1 overflow-hidden p-4" style="height: calc(100vh - 300px); touch-action: none;">
+        <div class="flex-1 overflow-auto p-4" style="height: calc(100vh - 300px);">
             <canvas id="drawingCanvas" class="drawing-canvas block mx-auto border-4 border-gray-400 dark:border-gray-500 rounded-lg shadow-lg" style="touch-action: none;"></canvas>
         </div>
     </div>
@@ -1172,9 +1158,6 @@
             setupScreen.classList.add('hidden');
             drawingScreen.classList.remove('hidden');
             
-            // Add drawing mode class to body to prevent scrolling
-            document.body.classList.add('drawing-mode');
-            
             currentPromptEl.textContent = currentPrompt;
             timeLeft = selectedTime;
             startTime = new Date();
@@ -1286,8 +1269,8 @@
             drawingScreen.classList.add('hidden');
             setupScreen.classList.remove('hidden');
             
-            // Remove drawing mode class from body
-            document.body.classList.remove('drawing-mode');
+            // Remove drawing active class from body
+            document.body.classList.remove('drawing-active');
             
             currentPrompt = '';
             selectedTime = 0;
