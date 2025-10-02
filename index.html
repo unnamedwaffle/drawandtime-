@@ -1334,13 +1334,9 @@
         function performEraseOperation(x, y, isFirst = false) {
             const size = brushSize.value;
             
-            if (isAndroidTablet) {
-                // Special Android tablet eraser implementation
-                performAndroidErase(x, y, isFirst);
-            } else {
-                // Standard eraser implementation for other devices
-                performStandardErase(x, y, isFirst);
-            }
+            // Use the reliable paint-with-background-color approach for ALL devices
+            // This ensures consistent behavior across computers, tablets, and phones
+            performUniversalErase(x, y, isFirst);
             
             lastErasePoint = { x, y };
         }
@@ -1373,84 +1369,49 @@
             }
         }
 
-        function performAndroidErase(x, y, isFirst) {
+        function performUniversalErase(x, y, isFirst) {
             const size = brushSize.value;
             
-            // Android-specific eraser: Use pixel manipulation approach
-            // This method manually edits the image data to "erase" pixels
+            // Universal eraser: Paint with canvas background color (always white)
+            // This approach works reliably on ALL devices including Android tablets, 
+            // computers, iPads, and works regardless of dark mode settings
             
-            try {
-                // Get the current image data
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-                
-                // Calculate the area to erase (circle)
-                const radius = size / 2;
-                const centerX = Math.round(x);
-                const centerY = Math.round(y);
-                
-                // Erase pixels in a circular area
-                for (let px = centerX - radius; px <= centerX + radius; px++) {
-                    for (let py = centerY - radius; py <= centerY + radius; py++) {
-                        // Check if pixel is within canvas bounds
-                        if (px >= 0 && px < canvas.width && py >= 0 && py < canvas.height) {
-                            // Check if pixel is within circle
-                            const distance = Math.sqrt((px - centerX) * (px - centerX) + (py - centerY) * (py - centerY));
-                            if (distance <= radius) {
-                                // Calculate pixel index (4 bytes per pixel: RGBA)
-                                const index = (py * canvas.width + px) * 4;
-                                
-                                // Set pixel to white (erased)
-                                data[index] = 255;     // Red
-                                data[index + 1] = 255; // Green
-                                data[index + 2] = 255; // Blue
-                                data[index + 3] = 255; // Alpha (fully opaque)
-                            }
-                        }
-                    }
-                }
-                
-                // Connect to previous point if not first
-                if (!isFirst && lastErasePoint) {
-                    // Draw line between points
-                    const dx = centerX - lastErasePoint.x;
-                    const dy = centerY - lastErasePoint.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance > 0) {
-                        const steps = Math.max(Math.ceil(distance), 1);
-                        for (let i = 0; i <= steps; i++) {
-                            const t = i / steps;
-                            const lineX = Math.round(lastErasePoint.x + dx * t);
-                            const lineY = Math.round(lastErasePoint.y + dy * t);
-                            
-                            // Erase pixels around this point
-                            for (let px = lineX - radius; px <= lineX + radius; px++) {
-                                for (let py = lineY - radius; py <= lineY + radius; py++) {
-                                    if (px >= 0 && px < canvas.width && py >= 0 && py < canvas.height) {
-                                        const lineDist = Math.sqrt((px - lineX) * (px - lineX) + (py - lineY) * (py - lineY));
-                                        if (lineDist <= radius) {
-                                            const index = (py * canvas.width + px) * 4;
-                                            data[index] = 255;     // Red
-                                            data[index + 1] = 255; // Green
-                                            data[index + 2] = 255; // Blue
-                                            data[index + 3] = 255; // Alpha
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Put the modified image data back
-                ctx.putImageData(imageData, 0, 0);
-                
-            } catch (error) {
-                console.log('Android eraser fallback to standard method');
-                // Fallback to standard eraser if pixel manipulation fails
-                performStandardErase(x, y, isFirst);
+            // Save current brush settings
+            const originalColor = ctx.strokeStyle;
+            const originalFillStyle = ctx.fillStyle;
+            const originalComposition = ctx.globalCompositeOperation;
+            
+            // Set up to paint with white (canvas background color)
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.lineWidth = size;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // Paint white circle at current position
+            ctx.beginPath();
+            ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Connect to previous point if not first
+            if (!isFirst && lastErasePoint) {
+                ctx.beginPath();
+                ctx.moveTo(lastErasePoint.x, lastErasePoint.y);
+                ctx.lineTo(x, y);
+                ctx.stroke();
             }
+            
+            // Restore original settings
+            ctx.strokeStyle = originalColor;
+            ctx.fillStyle = originalFillStyle;
+            ctx.globalCompositeOperation = originalComposition;
+        }
+
+        function performAndroidErase(x, y, isFirst) {
+            // This function is now deprecated in favor of performUniversalErase
+            // Keep for backward compatibility but redirect to universal method
+            performUniversalErase(x, y, isFirst);
         }
 
         function startDrawingMouse(e) {
