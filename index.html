@@ -1376,48 +1376,80 @@
         function performAndroidErase(x, y, isFirst) {
             const size = brushSize.value;
             
-            // Android-specific eraser: Use a simpler approach that works better on Android
-            // Just use multiple erase operations with different techniques
+            // Android-specific eraser: Use pixel manipulation approach
+            // This method manually edits the image data to "erase" pixels
             
-            // Method 1: Direct destination-out circle
-            ctx.save();
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.fillStyle = 'rgba(0,0,0,1)';
-            ctx.beginPath();
-            ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.restore();
-            
-            // Method 2: If not first point, connect with line
-            if (!isFirst && lastErasePoint) {
-                ctx.save();
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.strokeStyle = 'rgba(0,0,0,1)';
-                ctx.lineWidth = size;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.beginPath();
-                ctx.moveTo(lastErasePoint.x, lastErasePoint.y);
-                ctx.lineTo(x, y);
-                ctx.stroke();
-                ctx.restore();
-            }
-            
-            // Method 3: Additional circle overlay for Android tablets (ensures visibility)
-            ctx.save();
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.fillStyle = 'rgba(0,0,0,0.8)';
-            ctx.beginPath();
-            ctx.arc(x, y, size / 3, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.restore();
-            
-            // Force visual refresh for Android rendering issues
-            if (canvas && canvas.getContext) {
-                const tempImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                requestAnimationFrame(() => {
-                    ctx.putImageData(tempImageData, 0, 0);
-                });
+            try {
+                // Get the current image data
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                // Calculate the area to erase (circle)
+                const radius = size / 2;
+                const centerX = Math.round(x);
+                const centerY = Math.round(y);
+                
+                // Erase pixels in a circular area
+                for (let px = centerX - radius; px <= centerX + radius; px++) {
+                    for (let py = centerY - radius; py <= centerY + radius; py++) {
+                        // Check if pixel is within canvas bounds
+                        if (px >= 0 && px < canvas.width && py >= 0 && py < canvas.height) {
+                            // Check if pixel is within circle
+                            const distance = Math.sqrt((px - centerX) * (px - centerX) + (py - centerY) * (py - centerY));
+                            if (distance <= radius) {
+                                // Calculate pixel index (4 bytes per pixel: RGBA)
+                                const index = (py * canvas.width + px) * 4;
+                                
+                                // Set pixel to white (erased)
+                                data[index] = 255;     // Red
+                                data[index + 1] = 255; // Green
+                                data[index + 2] = 255; // Blue
+                                data[index + 3] = 255; // Alpha (fully opaque)
+                            }
+                        }
+                    }
+                }
+                
+                // Connect to previous point if not first
+                if (!isFirst && lastErasePoint) {
+                    // Draw line between points
+                    const dx = centerX - lastErasePoint.x;
+                    const dy = centerY - lastErasePoint.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance > 0) {
+                        const steps = Math.max(Math.ceil(distance), 1);
+                        for (let i = 0; i <= steps; i++) {
+                            const t = i / steps;
+                            const lineX = Math.round(lastErasePoint.x + dx * t);
+                            const lineY = Math.round(lastErasePoint.y + dy * t);
+                            
+                            // Erase pixels around this point
+                            for (let px = lineX - radius; px <= lineX + radius; px++) {
+                                for (let py = lineY - radius; py <= lineY + radius; py++) {
+                                    if (px >= 0 && px < canvas.width && py >= 0 && py < canvas.height) {
+                                        const lineDist = Math.sqrt((px - lineX) * (px - lineX) + (py - lineY) * (py - lineY));
+                                        if (lineDist <= radius) {
+                                            const index = (py * canvas.width + px) * 4;
+                                            data[index] = 255;     // Red
+                                            data[index + 1] = 255; // Green
+                                            data[index + 2] = 255; // Blue
+                                            data[index + 3] = 255; // Alpha
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Put the modified image data back
+                ctx.putImageData(imageData, 0, 0);
+                
+            } catch (error) {
+                console.log('Android eraser fallback to standard method');
+                // Fallback to standard eraser if pixel manipulation fails
+                performStandardErase(x, y, isFirst);
             }
         }
 
