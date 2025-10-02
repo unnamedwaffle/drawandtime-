@@ -1376,71 +1376,49 @@
         function performAndroidErase(x, y, isFirst) {
             const size = brushSize.value;
             
-            // Android-specific eraser: Copy canvas to temp, draw white circle, copy back
-            if (!eraserTempCanvas) {
-                eraserTempCanvas = document.createElement('canvas');
-                eraserTempCtx = eraserTempCanvas.getContext('2d');
-            }
+            // Android-specific eraser: Use a simpler approach that works better on Android
+            // Just use multiple erase operations with different techniques
             
-            // Ensure temp canvas matches main canvas
-            if (eraserTempCanvas.width !== canvas.width || eraserTempCanvas.height !== canvas.height) {
-                eraserTempCanvas.width = canvas.width;
-                eraserTempCanvas.height = canvas.height;
-            }
+            // Method 1: Direct destination-out circle
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = 'rgba(0,0,0,1)';
+            ctx.beginPath();
+            ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
             
-            // Method 1: Copy current canvas to temp
-            eraserTempCtx.clearRect(0, 0, eraserTempCanvas.width, eraserTempCanvas.height);
-            eraserTempCtx.drawImage(canvas, 0, 0);
-            
-            // Method 2: Create mask canvas for erasing
-            const maskCanvas = document.createElement('canvas');
-            const maskCtx = maskCanvas.getContext('2d');
-            maskCanvas.width = canvas.width;
-            maskCanvas.height = canvas.height;
-            
-            // Draw the area to be erased on mask
-            maskCtx.fillStyle = 'black';
-            maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
-            
-            // Create holes in the mask (what to erase)
-            maskCtx.globalCompositeOperation = 'destination-out';
-            maskCtx.fillStyle = 'white';
-            maskCtx.beginPath();
-            maskCtx.arc(x, y, size / 2, 0, 2 * Math.PI);
-            maskCtx.fill();
-            
-            // Connect to previous point if not first
+            // Method 2: If not first point, connect with line
             if (!isFirst && lastErasePoint) {
-                maskCtx.beginPath();
-                maskCtx.lineWidth = size;
-                maskCtx.lineCap = 'round';
-                maskCtx.strokeStyle = 'white';
-                maskCtx.moveTo(lastErasePoint.x, lastErasePoint.y);
-                maskCtx.lineTo(x, y);
-                maskCtx.stroke();
+                ctx.save();
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                ctx.lineWidth = size;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(lastErasePoint.x, lastErasePoint.y);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                ctx.restore();
             }
             
-            // Apply mask to temp canvas
-            eraserTempCtx.globalCompositeOperation = 'destination-in';
-            eraserTempCtx.drawImage(maskCanvas, 0, 0);
+            // Method 3: Additional circle overlay for Android tablets (ensures visibility)
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+            ctx.beginPath();
+            ctx.arc(x, y, size / 3, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
             
-            // Clear main canvas and draw the masked result
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.drawImage(eraserTempCanvas, 0, 0);
-            
-            // Force a visual update for Android tablets
-            setTimeout(() => {
-                if (canvas && canvas.style) {
-                    const currentTransform = canvas.style.transform;
-                    canvas.style.transform = currentTransform + ' translateZ(0)';
-                    requestAnimationFrame(() => {
-                        canvas.style.transform = currentTransform;
-                    });
-                }
-            }, 1);
+            // Force visual refresh for Android rendering issues
+            if (canvas && canvas.getContext) {
+                const tempImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                requestAnimationFrame(() => {
+                    ctx.putImageData(tempImageData, 0, 0);
+                });
+            }
         }
 
         function startDrawingMouse(e) {
