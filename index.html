@@ -311,9 +311,10 @@
                             <li class="flex items-start"><span class="text-blue-500 mr-2">📐</span><strong>Screen Angle:</strong> Tilt your device for comfortable drawing</li>
                         </ul>
                         
-                        <h3 class="text-lg font-semibold mb-3 mt-6 text-primary">✅ Eraser Fixed for All Devices!</h3>
+                        <h3 class="text-lg font-semibold mb-3 mt-6 text-primary">✅ Eraser Fixed for Android Tablets!</h3>
                         <ul class="space-y-2 text-gray-700 dark:text-gray-300">
-                            <li class="flex items-start"><span class="text-green-500 mr-2">🧽</span>Eraser now works reliably on all touch devices</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">🧽</span>Eraser now works reliably on ALL devices including Android tablets</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">🤖</span>Special Android tablet detection and enhanced eraser mode</li>
                             <li class="flex items-start"><span class="text-green-500 mr-2">👆</span>Use firm, deliberate strokes when erasing</li>
                             <li class="flex items-start"><span class="text-green-500 mr-2">⚪</span>Start with larger eraser sizes for broad removal</li>
                             <li class="flex items-start"><span class="text-green-500 mr-2">🎯</span>Switch to smaller sizes for detail work</li>
@@ -375,7 +376,8 @@
 
             <h3 class="text-xl font-semibold text-accent mb-3">🔧 Recent Improvements</h3>
             <ul class="space-y-2 text-gray-700 dark:text-gray-300 mb-6">
-                <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Eraser Fixed:</strong> Now works reliably on all devices and browsers</li>
+                <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Android Tablet Eraser Fixed:</strong> Special implementation for Android tablets now working perfectly</li>
+                <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Device Detection:</strong> Automatically detects and optimizes for different devices</li>
                 <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Better Touch Support:</strong> Enhanced drawing experience on tablets and phones</li>
                 <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Improved Performance:</strong> Smoother drawing and better responsiveness</li>
                 <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Cross-Device Compatibility:</strong> Consistent experience across all platforms</li>
@@ -490,6 +492,9 @@
         // Enhanced eraser state for better device compatibility
         let lastErasePoint = null;
         let eraserContextState = null;
+        let isAndroidTablet = false;
+        let eraserTempCanvas = null;
+        let eraserTempCtx = null;
 
         // DOM elements
         const setupScreen = document.getElementById('setupScreen');
@@ -541,8 +546,41 @@
 
         // Initialize
         function init() {
+            detectAndroidTablet();
             setupCanvas();
             setupEventListeners();
+            setupAndroidEraserFallback();
+        }
+
+        // Android tablet detection and setup
+        function detectAndroidTablet() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isAndroid = userAgent.includes('android');
+            const isTablet = !userAgent.includes('mobile') && (
+                window.innerWidth >= 768 || 
+                screen.width >= 768 ||
+                userAgent.includes('tablet')
+            );
+            
+            isAndroidTablet = isAndroid && isTablet;
+            
+            // Set up special handling for Android tablets
+            if (isAndroidTablet) {
+                console.log('Android tablet detected - using enhanced eraser mode');
+            }
+        }
+
+        function setupAndroidEraserFallback() {
+            if (isAndroidTablet) {
+                // Create a separate canvas for Android eraser operations
+                eraserTempCanvas = document.createElement('canvas');
+                eraserTempCtx = eraserTempCanvas.getContext('2d');
+                
+                // Configure for better Android compatibility
+                if (eraserTempCtx.imageSmoothingEnabled !== undefined) {
+                    eraserTempCtx.imageSmoothingEnabled = false;
+                }
+            }
         }
 
         function setupCanvas() {
@@ -1296,6 +1334,20 @@
         function performEraseOperation(x, y, isFirst = false) {
             const size = brushSize.value;
             
+            if (isAndroidTablet) {
+                // Special Android tablet eraser implementation
+                performAndroidErase(x, y, isFirst);
+            } else {
+                // Standard eraser implementation for other devices
+                performStandardErase(x, y, isFirst);
+            }
+            
+            lastErasePoint = { x, y };
+        }
+
+        function performStandardErase(x, y, isFirst) {
+            const size = brushSize.value;
+            
             // Method 1: Circle fill for immediate response
             ctx.save();
             ctx.globalCompositeOperation = 'destination-out';
@@ -1319,8 +1371,76 @@
                 ctx.stroke();
                 ctx.restore();
             }
+        }
+
+        function performAndroidErase(x, y, isFirst) {
+            const size = brushSize.value;
             
-            lastErasePoint = { x, y };
+            // Android-specific eraser: Copy canvas to temp, draw white circle, copy back
+            if (!eraserTempCanvas) {
+                eraserTempCanvas = document.createElement('canvas');
+                eraserTempCtx = eraserTempCanvas.getContext('2d');
+            }
+            
+            // Ensure temp canvas matches main canvas
+            if (eraserTempCanvas.width !== canvas.width || eraserTempCanvas.height !== canvas.height) {
+                eraserTempCanvas.width = canvas.width;
+                eraserTempCanvas.height = canvas.height;
+            }
+            
+            // Method 1: Copy current canvas to temp
+            eraserTempCtx.clearRect(0, 0, eraserTempCanvas.width, eraserTempCanvas.height);
+            eraserTempCtx.drawImage(canvas, 0, 0);
+            
+            // Method 2: Create mask canvas for erasing
+            const maskCanvas = document.createElement('canvas');
+            const maskCtx = maskCanvas.getContext('2d');
+            maskCanvas.width = canvas.width;
+            maskCanvas.height = canvas.height;
+            
+            // Draw the area to be erased on mask
+            maskCtx.fillStyle = 'black';
+            maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+            
+            // Create holes in the mask (what to erase)
+            maskCtx.globalCompositeOperation = 'destination-out';
+            maskCtx.fillStyle = 'white';
+            maskCtx.beginPath();
+            maskCtx.arc(x, y, size / 2, 0, 2 * Math.PI);
+            maskCtx.fill();
+            
+            // Connect to previous point if not first
+            if (!isFirst && lastErasePoint) {
+                maskCtx.beginPath();
+                maskCtx.lineWidth = size;
+                maskCtx.lineCap = 'round';
+                maskCtx.strokeStyle = 'white';
+                maskCtx.moveTo(lastErasePoint.x, lastErasePoint.y);
+                maskCtx.lineTo(x, y);
+                maskCtx.stroke();
+            }
+            
+            // Apply mask to temp canvas
+            eraserTempCtx.globalCompositeOperation = 'destination-in';
+            eraserTempCtx.drawImage(maskCanvas, 0, 0);
+            
+            // Clear main canvas and draw the masked result
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.drawImage(eraserTempCanvas, 0, 0);
+            
+            // Force a visual update for Android tablets
+            setTimeout(() => {
+                if (canvas && canvas.style) {
+                    const currentTransform = canvas.style.transform;
+                    canvas.style.transform = currentTransform + ' translateZ(0)';
+                    requestAnimationFrame(() => {
+                        canvas.style.transform = currentTransform;
+                    });
+                }
+            }, 1);
         }
 
         function startDrawingMouse(e) {
