@@ -59,9 +59,18 @@
         <div class="bg-gradient-to-br from-accent/10 to-secondary/10 dark:from-accent/20 dark:to-secondary/20 border-2 border-accent/30 rounded-xl p-6 mb-6 shadow-lg">
             <h2 class="text-xl font-semibold mb-4 text-accent">🎨 Drawing Prompt</h2>
             <div id="promptDisplay" class="text-2xl font-medium text-primary mb-4 min-h-[3rem] flex items-center justify-center border-3 border-dashed border-secondary rounded-lg p-4 bg-white/50 dark:bg-gray-700/50">
-                Click "Get Prompt" to start!
+                Click "Get Prompt" or enter your own theme!
             </div>
-            <button id="getPromptBtn" class="btn-primary w-full">🎲 Get Random Prompt</button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <button id="getPromptBtn" class="btn-primary">🎲 Get Random Prompt</button>
+                <button id="useCustomBtn" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">✏️ Use Custom Theme</button>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Custom Theme:</label>
+                <input type="text" id="customPrompt" placeholder="Enter your own drawing theme..." 
+                       class="w-full px-4 py-3 text-base border-2 border-accent/30 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-300">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Examples: "Steampunk robot", "Cozy coffee shop", "Underwater city"</p>
+            </div>
         </div>
 
         <div class="bg-gradient-to-br from-warning/10 to-success/10 dark:from-warning/20 dark:to-success/20 border-2 border-warning/30 rounded-xl p-6 mb-6 shadow-lg">
@@ -259,9 +268,9 @@
     </div>
 
     <!-- Tutorial Screen -->
-    <div id="tutorialScreen" class="hidden container mx-auto px-4 py-8 max-w-4xl">
+    <div id="tutorialScreen" class="hidden container mx-auto px-4 py-8 max-w-6xl">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-primary mb-4">🎨 Drawing Tutorial & Tips</h1>
+            <h1 class="text-4xl font-bold text-primary mb-4">🎨 Complete Drawing Tutorial & Guide</h1>
             <p class="text-lg text-gray-600 dark:text-gray-400">Master the art of quick sketching and time-based drawing!</p>
             <button id="backToMainBtn" class="mt-4 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">
                 ← Back to Main
@@ -291,6 +300,183 @@
                             <li class="flex items-start"><span class="text-warning mr-2">🧽</span><strong>Eraser (E):</strong> Clean up mistakes</li>
                             <li class="flex items-start"><span class="text-success mr-2">📏</span><strong>Line (L):</strong> Straight edges and structure</li>
                             <li class="flex items-start"><span class="text-accent mr-2">⬜</span><strong>Shapes (R/C):</strong> Quick geometric forms</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drawing Techniques -->
+            <div class="bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 border-2 border-green-300 dark:border-green-600 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-green-600 dark:text-green-400 mb-4 flex items-center">
+                    ✏️ Core Drawing Techniques
+                </h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">🎯 Gesture Drawing</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Purpose:</strong> Capture movement and energy</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Time:</strong> 30 seconds to 2 minutes</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Focus:</strong> Flow, not details</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Lines:</strong> Long, confident strokes</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Best for:</strong> Figures, animals, action poses</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">🏗️ Construction Drawing</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Purpose:</strong> Build complex subjects systematically</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Method:</strong> Start with basic shapes</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Progress:</strong> Add detail gradually</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Tools:</strong> Line and rectangle tools</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Best for:</strong> Buildings, vehicles, mechanical objects</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">🌟 Contour Drawing</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Purpose:</strong> Understand form and edges</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Method:</strong> Follow outlines carefully</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Variation:</strong> Blind contour (don't look at paper)</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Speed:</strong> Slow and deliberate</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">•</span><strong>Best for:</strong> Objects, still life, portraits</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Management Strategies -->
+            <div class="bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900 dark:to-amber-900 border-2 border-orange-300 dark:border-orange-600 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-4 flex items-center">
+                    ⏰ Time Management Strategies
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">⚡ Speed Drawing Tips</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-orange-500 mr-2">•</span><strong>First 10%:</strong> Basic composition and major shapes</li>
+                            <li class="flex items-start"><span class="text-orange-500 mr-2">•</span><strong>Next 40%:</strong> Primary forms and structure</li>
+                            <li class="flex items-start"><span class="text-orange-500 mr-2">•</span><strong>Next 30%:</strong> Secondary details and refinement</li>
+                            <li class="flex items-start"><span class="text-orange-500 mr-2">•</span><strong>Final 20%:</strong> Finishing touches and cleanup</li>
+                            <li class="flex items-start"><span class="text-orange-500 mr-2">•</span><strong>Priority:</strong> Get the big picture first!</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">🎯 Progressive Training</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-orange-500 mr-2">•</span><strong>Week 1:</strong> 5-minute drawings</li>
+                            <li class="flex items-start"><span class="text-orange-500 mr-2">•</span><strong>Week 2:</strong> 3-minute drawings</li>
+                            <li class="flex items-start"><span class="text-orange-500 mr-2">•</span><strong>Week 3:</strong> 2-minute drawings</li>
+                            <li class="flex items-start"><span class="text-orange-500 mr-2">•</span><strong>Week 4+:</strong> 1-minute challenges</li>
+                            <li class="flex items-start"><span class="text-orange-500 mr-2">•</span><strong>Goal:</strong> Gradually build speed while maintaining quality</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Tool Usage -->
+            <div class="bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900 dark:to-indigo-900 border-2 border-purple-300 dark:border-purple-600 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-4 flex items-center">
+                    🛠️ Advanced Tool Mastery
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">🖌️ Brush Techniques</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-purple-500 mr-2">•</span><strong>Round Brush:</strong> Perfect for organic shapes and smooth lines</li>
+                            <li class="flex items-start"><span class="text-purple-500 mr-2">•</span><strong>Square Brush:</strong> Great for architectural elements and hard edges</li>
+                            <li class="flex items-start"><span class="text-purple-500 mr-2">•</span><strong>Soft Brush:</strong> Ideal for shadows, clouds, and atmospheric effects</li>
+                            <li class="flex items-start"><span class="text-purple-500 mr-2">•</span><strong>Spray Brush:</strong> Perfect for textures, grass, and rough surfaces</li>
+                            <li class="flex items-start"><span class="text-purple-500 mr-2">•</span><strong>Size Variation:</strong> Use smaller brushes for details, larger for blocking</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">⚙️ Workflow Shortcuts</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-purple-500 mr-2">•</span><strong>B:</strong> Quick switch to brush tool</li>
+                            <li class="flex items-start"><span class="text-purple-500 mr-2">•</span><strong>E:</strong> Fast eraser access</li>
+                            <li class="flex items-start"><span class="text-purple-500 mr-2">•</span><strong>Ctrl+Z:</strong> Undo last action</li>
+                            <li class="flex items-start"><span class="text-purple-500 mr-2">•</span><strong>G:</strong> Toggle helpful grid</li>
+                            <li class="flex items-start"><span class="text-purple-500 mr-2">•</span><strong>+/-:</strong> Zoom in/out quickly</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Composition & Design -->
+            <div class="bg-gradient-to-br from-pink-100 to-rose-100 dark:from-pink-900 dark:to-rose-900 border-2 border-pink-300 dark:border-pink-600 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-pink-600 dark:text-pink-400 mb-4 flex items-center">
+                    🎨 Composition & Design Principles
+                </h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">📐 Rule of Thirds</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Divide canvas into 9 equal sections</li>
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Place focal points at intersections</li>
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Use grid tool (G) to visualize</li>
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Creates more dynamic compositions</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">⚖️ Balance & Weight</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Large objects = visual weight</li>
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Dark areas draw attention</li>
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Balance left and right sides</li>
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Create stability or tension intentionally</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">🌊 Leading Lines</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Guide viewer's eye through drawing</li>
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Use line tool for straight guides</li>
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Roads, rivers, edges create flow</li>
+                            <li class="flex items-start"><span class="text-pink-500 mr-2">•</span>Point toward main subject</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Practice Exercises -->
+            <div class="bg-gradient-to-br from-teal-100 to-cyan-100 dark:from-teal-900 dark:to-cyan-900 border-2 border-teal-300 dark:border-teal-600 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-teal-600 dark:text-teal-400 mb-4 flex items-center">
+                    💪 Structured Practice Exercises
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">🔥 Daily Warm-ups (5-10 minutes)</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span><strong>Line Quality:</strong> Draw smooth curves and straight lines</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span><strong>Basic Shapes:</strong> Circles, squares, triangles repeatedly</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span><strong>Hatching Practice:</strong> Different line patterns for shading</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span><strong>Gesture Scribbles:</strong> Loose, expressive marks</li>
+                        </ul>
+
+                        <h3 class="text-lg font-semibold mb-3 mt-6 text-primary">🎯 Weekly Challenges</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span><strong>Monday:</strong> Draw 10 different vehicles in 2 minutes each</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span><strong>Wednesday:</strong> Nature studies - leaves, flowers, trees</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span><strong>Friday:</strong> Character expressions and poses</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span><strong>Weekend:</strong> Longer studies (5-10 minutes)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-primary">🏆 Skill Building Progressions</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">1.</span><strong>Week 1-2:</strong> Focus on basic shapes and proportions</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">2.</span><strong>Week 3-4:</strong> Add simple details and character</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">3.</span><strong>Week 5-6:</strong> Work on composition and layout</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">4.</span><strong>Week 7-8:</strong> Experiment with different styles</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">5.</span><strong>Week 9+:</strong> Personal projects and complex scenes</li>
+                        </ul>
+
+                        <h3 class="text-lg font-semibold mb-3 mt-6 text-primary">📈 Tracking Progress</h3>
+                        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span>Save your drawings with the built-in save feature</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span>Compare weekly drawings of the same subjects</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span>Note improvements in speed and accuracy</li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-2">•</span>Share progress with drawing communities online</li>
                         </ul>
                     </div>
                 </div>
@@ -362,6 +548,7 @@
             <h3 class="text-xl font-semibold text-accent mb-3">✨ Features</h3>
             <ul class="space-y-2 text-gray-700 dark:text-gray-300 mb-6">
                 <li class="flex items-start"><span class="text-primary mr-2">•</span>120+ diverse drawing prompts</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>✨ <strong>NEW: Custom theme input!</strong> Enter your own drawing subjects</li>
                 <li class="flex items-start"><span class="text-primary mr-2">•</span>Professional drawing tools (brush, eraser, shapes, text)</li>
                 <li class="flex items-start"><span class="text-primary mr-2">•</span>Multiple brush types and customizable settings</li>
                 <li class="flex items-start"><span class="text-primary mr-2">•</span>✅ <strong>Fixed eraser that works on all devices!</strong></li>
@@ -372,10 +559,13 @@
                 <li class="flex items-start"><span class="text-primary mr-2">•</span>Save drawings as JPG with embedded prompt info</li>
                 <li class="flex items-start"><span class="text-primary mr-2">•</span>Dark mode support</li>
                 <li class="flex items-start"><span class="text-primary mr-2">•</span>Enhanced touch and mouse support</li>
+                <li class="flex items-start"><span class="text-primary mr-2">•</span>📚 <strong>NEW: Comprehensive tutorial system!</strong></li>
             </ul>
 
             <h3 class="text-xl font-semibold text-accent mb-3">🔧 Recent Improvements</h3>
             <ul class="space-y-2 text-gray-700 dark:text-gray-300 mb-6">
+                <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Custom Themes:</strong> Enter your own drawing subjects and themes</li>
+                <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Expanded Tutorials:</strong> Comprehensive guides covering techniques, composition, and practice</li>
                 <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Android Tablet Eraser Fixed:</strong> Special implementation for Android tablets now working perfectly</li>
                 <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Device Detection:</strong> Automatically detects and optimizes for different devices</li>
                 <li class="flex items-start"><span class="text-success mr-2">✅</span><strong>Better Touch Support:</strong> Enhanced drawing experience on tablets and phones</li>
@@ -402,6 +592,7 @@
                 <li class="flex items-start"><span class="text-success mr-2">•</span>Practice the same prompt multiple times to see improvement</li>
                 <li class="flex items-start"><span class="text-success mr-2">•</span>Use the tutorial section to learn specific techniques</li>
                 <li class="flex items-start"><span class="text-success mr-2">•</span>Don't be afraid to experiment with different tools and styles</li>
+                <li class="flex items-start"><span class="text-success mr-2">•</span>Try custom themes to practice specific subjects you want to improve</li>
             </ul>
         </div>
     </div>
@@ -501,6 +692,8 @@
         const drawingScreen = document.getElementById('drawingScreen');
         const promptDisplay = document.getElementById('promptDisplay');
         const getPromptBtn = document.getElementById('getPromptBtn');
+        const useCustomBtn = document.getElementById('useCustomBtn');
+        const customPromptInput = document.getElementById('customPrompt');
         const timerBtns = document.querySelectorAll('.timer-btn');
         const customTimeInput = document.getElementById('customTime');
         const startDrawingBtn = document.getElementById('startDrawingBtn');
@@ -635,6 +828,14 @@
         function setupEventListeners() {
             // Setup screen
             getPromptBtn.addEventListener('click', generatePrompt);
+            useCustomBtn.addEventListener('click', useCustomPrompt);
+            customPromptInput.addEventListener('input', handleCustomPromptInput);
+            customPromptInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && customPromptInput.value.trim()) {
+                    useCustomPrompt();
+                }
+            });
+            
             timerBtns.forEach(btn => {
                 btn.addEventListener('click', () => selectTime(parseInt(btn.dataset.time)));
             });
@@ -707,6 +908,24 @@
             document.getElementById('aboutBtn').addEventListener('click', showAbout);
             document.getElementById('backToMainBtn').addEventListener('click', showMain);
             document.getElementById('backToMainFromAboutBtn').addEventListener('click', showMain);
+        }
+
+        // Custom prompt functions
+        function useCustomPrompt() {
+            const customText = customPromptInput.value.trim();
+            if (customText) {
+                currentPrompt = customText;
+                promptDisplay.textContent = currentPrompt;
+                customPromptInput.value = '';
+                checkCanStart();
+            }
+        }
+
+        function handleCustomPromptInput() {
+            // Enable the "Use Custom Theme" button if there's text
+            const hasText = customPromptInput.value.trim().length > 0;
+            useCustomBtn.style.opacity = hasText ? '1' : '0.7';
+            useCustomBtn.style.pointerEvents = hasText ? 'auto' : 'none';
         }
 
         // Undo/Redo system
@@ -1128,7 +1347,7 @@
             
             currentPrompt = '';
             selectedTime = 0;
-            promptDisplay.textContent = 'Click "Get Prompt" to start!';
+            promptDisplay.textContent = 'Click "Get Prompt" or enter your own theme!';
             customTimeInput.value = '';
             
             timerBtns.forEach(btn => {
